@@ -1,2 +1,2 @@
 # html-txt-csv
-extract from html to text file, populate csv from text file
+extract from html to text file, populate into csv from text file
