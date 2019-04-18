@@ -38,7 +38,7 @@ data = []
 with open('outfile.txt') as fin:
     row = {}
     for line in fin:
-        key, val = line.strip().split(":")
+        key, val = line.strip().split(":")## ":" to be replaced with any delimiter to split the lines eg: name:arun 
         row[key] = val
         if key == 'Offset From Attachment At Top':
             data.append(row)
