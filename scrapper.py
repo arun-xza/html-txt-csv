@@ -7,10 +7,22 @@ import re
 
 # specify the url
 quote_page = "url"
-# query the website and return the html to the variable ‘page’
 page = urlopen(quote_page)
-# parse the html using beautiful soup and store in variable `soup`
 soup = BeautifulSoup(page, "html.parser")
+found = soup.get_text()
+with open('scrap.txt', 'w') as outfile:
+    print( found, file = outfile)
+
+page = urlopen(quote_page)
+soup = BeautifulSoup(page, "html.parser")
+found = soup.get_text()
+with open('scrap.txt', 'a') as outfile:
+    print( found, file = outfile)
+
+# query the website and return the html to the variable ‘page’
+
+# parse the html using beautiful soup and store in variable `soup`
+
 # # Take out the <div> of name and get its value
 # name_box = soup.find("strong", attrs={"class": "Faculty Name: "})
 # # strip() is used to remove starting and trailing
@@ -28,11 +40,9 @@ soup = BeautifulSoup(page, "html.parser")
 #  writer.writerow([found,datetime.now()])
 
 ##get all texts from the page
-found = soup.get_text()
 
 ##save it to a file
-with open('scrap.txt', 'w') as outfile:
-    print( found, file = outfile)
+
 
 ##converting from text to csv
 # data = []
@@ -57,6 +67,8 @@ substr = "Name:".lower()          # Substring to search for.
 substr1 = "Designation:".lower()
 substr2 = "Email:".lower()
 substr3 = "ContactNo:".lower()
+substr31 = "Contact No:".lower()
+substr32 = "Contact No&".lower()
 substr4 = "Qualification:".lower()
 substr5 = "Specialisation:".lower()
 with open ('scrap.txt', 'rt') as myfile:
@@ -72,6 +84,12 @@ with open ('scrap.txt', 'rt') as myfile:
             # errors.append(line.strip('\n'))
             errors.append(line)
         elif  line.lower().find(substr3) != -1:
+            # errors.append(line.strip(','))
+            errors.append(line)
+        elif line.lower().find(substr31) != -1:
+            # errors.append(line.strip(','))
+            errors.append(line)
+        elif line.lower().find(substr32) != -1:
             # errors.append(line.strip(','))
             errors.append(line)
         elif  line.lower().find(substr4) != -1:
@@ -92,10 +110,22 @@ import re
 
 with open('rawextract.txt') as myfile, open("extract.txt","w") as writer :
 
-    for m in re.findall('Faculty Name:.*\n*Designation:.*\n*Email:.*\nContactNo:.*\n*Qualification:.*\n*Area of Interest / Specialisation:.*', myfile.read()):
+    for m in re.findall('Faculty Name:.*\n*Designation:.*\n*Email:.*\nContactNo:.*\n*Qualification:.*\n*Area of Interest / Specialisation:.*\n.*', myfile.read()):
         writer.write(m)
         print(m)
 writer.close()
+#
+# with open('rawextract.txt') as myfile, open("extract.txt","a") as writer :
+#     for m in re.findall('Faculty Name:.*\n*Designation:.*\n*Email:.*\nContact No:.*\n*Qualification:.*\n*Area of Interest / Specialisation:.*', myfile.read()):
+#         writer.write(m)
+#         print(m)
+# writer.close()
+#
+# with open('rawextract.txt') as myfile, open("extract.txt", "a") as writer:
+#     for m in re.findall('Faculty Name:.*\n*Designation:.*\n*Email:.*\nContact No&.*\n*Qualification:.*\n*Area of Interest / Specialisation:.*', myfile.read()):
+#         writer.write(m)
+#         print(m)
+# writer.close()
 
 ###################################################CHECK MODULE
 ###################################################
@@ -113,18 +143,41 @@ writer.close()
 #     else:
 #         print ("NOT OK")
 
+######################################################################last working csv
+# import pandas as pd
+#
+# with open('rawextract.txt', 'r') as records:
+#     lines = [(line.split(':'))[1] for line in records.readlines()]
+#     col_titles = ('Name', 'Designation','Email','Contact','Qualification','Specialisation')
+#     data = pd.np.array(lines).reshape((len(lines) // 6, 6))
+#     pd.DataFrame(data, columns=col_titles).to_csv("output.csv", index=False)
 
 
+# import csv, collections
+#
+# with open('extract.txt', 'r') as record_fields, open('log.csv', 'w') as out_file:
+#     records, fieldnames, record = [], collections.OrderedDict(), {}
+#     for field in record_fields:
+#         name, _, value = field.strip().partition(": ")
+#         if name == "Faculty Name" and record:
+#             records.append(record)
+#             record = {}
+#         if name not in record: record[name] = value
+#         fieldnames[name] = None
+#     records.append(record)
+#
+#     writer = csv.DictWriter(out_file, fieldnames=fieldnames.keys())
+#     writer.writeheader()
+#     writer.writerows(records)
 
-
-
-import pandas as pd
-
-with open('rawextract.txt', 'r') as records:
-    lines = [(line.split(':'))[1] for line in records.readlines()]
-    col_titles = ('Faculty name', 'designation','email','contact','Qualification','Specialisation')
-    data = pd.np.array(lines).reshape((len(lines) // 6, 6))
-    pd.DataFrame(data, columns=col_titles).to_csv("output.csv", index=False)
+import itertools, csv
+data = [i.strip('\n').split(': ') for i in open('extract.txt')]
+new_data = [[a, list(b)] for a, b in itertools.groupby(data, key=lambda x:x[0] == 'Faculty Name')]
+header = [c for b in new_data[:2] for c, _ in b[-1]]
+a, b, *d = [[new_data[i][-1][-1][-1], *[' '.join(c) for _, *c in new_data[i+1][-1]]] for i in range(0, len(new_data), 2)]
+with open('professors.csv', 'w') as f:
+  write = csv.writer(f)
+  write.writerows([header, a, b, d[0][:6]])
 
 
     # substr = "Designation".lower()  # Substring to search for.
