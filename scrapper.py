@@ -6,7 +6,8 @@ from datetime import datetime
 import re
 
 # specify the url
-quote_page = "url"
+quote_page = "url" #college faculty profile link from the website
+
 page = urlopen(quote_page)
 soup = BeautifulSoup(page, "html.parser")
 found = soup.get_text()
